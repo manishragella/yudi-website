@@ -1,753 +1,294 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YUDI — AI Research Lab</title>
-    <meta name="description" content="YUDI is an AI research lab building LCoMs — Large Conversational Models. Brain-native AI architecture grounded in neuroscience.">
-    
-    <style>
-        /* ==========================================================================
-           1. CSS VARIABLES & RESET
-           ========================================================================== */
-        :root {
-            --color-bg: #000000;
-            --color-surface: rgba(255, 255, 255, 0.04);
-            --color-surface-hover: rgba(255, 255, 255, 0.07);
-            --color-border: rgba(255, 255, 255, 0.08);
-            --color-border-hover: rgba(255, 255, 255, 0.18);
-            --color-text-primary: rgba(255, 255, 255, 0.92);
-            --color-text-secondary: rgba(255, 255, 255, 0.45);
-            --color-text-dim: rgba(255, 255, 255, 0.15);
-            
-            --font-stack: 'Inter', system-ui, -apple-system, sans-serif;
-            --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-            font-family: var(--font-stack);
-            line-height: 1.8;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            /* Hide overflow during loading */
-            overflow-y: hidden; 
-        }
-
-        /* Allow scrolling once loaded */
-        body.loaded {
-            overflow-y: auto;
-        }
-
-        /* ==========================================================================
-           2. PRE-LOADER
-           ========================================================================== */
-        #loader {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: #000000;
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-
-        .loader-content {
-            width: 240px;
-            text-align: center;
-        }
-
-        .loader-logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: 0.2em;
-            color: #ffffff;
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-        }
-
-        .loader-bar-bg {
-            width: 100%;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .loader-bar-fill {
-            position: absolute;
-            top: 0; left: 0;
-            height: 100%;
-            width: 0%;
-            background: #ffffff;
-            animation: fillLoader 1.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
-        }
-
-        @keyframes fillLoader {
-            0% { width: 0%; }
-            50% { width: 60%; }
-            100% { width: 100%; }
-        }
-
-        /* ==========================================================================
-           3. TYPOGRAPHY & UTILITIES
-           ========================================================================== */
-        h1, h2, h3, h4 { line-height: 1.2; }
-        
-        .display-title {
-            font-size: clamp(4rem, 10vw, 9rem);
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 0px 40px rgba(255, 255, 255, 0.15));
-            margin-bottom: 0.5rem;
-        }
-
-        .subtitle {
-            font-size: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            margin-bottom: 1.5rem;
-            color: var(--color-text-secondary);
-            font-weight: 500;
-        }
-
-        .section-title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 3rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 5%;
-        }
-
-        .text-muted { color: var(--color-text-secondary); }
-        
-        /* Glassmorphism System */
-        .glass {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 1rem;
-        }
-
-        .glass-hover:hover {
-            background: var(--color-surface-hover);
-            border-color: var(--color-border-hover);
-            transform: translateY(-4px);
-            transition: all 0.4s ease;
-        }
-
-        /* Scroll Reveal Animation */
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.8s var(--ease-spring);
-        }
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .delay-1 { transition-delay: 0.1s; }
-        .delay-2 { transition-delay: 0.2s; }
-        .delay-3 { transition-delay: 0.3s; }
-
-        /* ==========================================================================
-           4. COMPONENTS & SECTIONS
-           ========================================================================== */
-        /* Navbar */
-        nav {
-            position: fixed;
-            top: 0; width: 100%;
-            z-index: 100;
-            padding: 1.5rem 5%;
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        nav.scrolled {
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--color-border);
-            padding: 1rem 5%;
-        }
-        .logo img { 
-            height: 56px; 
-            width: auto;
-            display: block; 
-            object-fit: contain;
-            transform: translateY(-2px);
-        }
-        .nav-links { display: flex; gap: 2rem; }
-        .nav-links a {
-            color: var(--color-text-secondary);
-            text-decoration: none;
-            font-size: 0.85rem;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            transition: color 0.3s;
-        }
-        .nav-links a:hover { color: #fff; }
-
-        /* Hero */
-        .hero {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            position: relative;
-        }
-        #neural-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: -1;
-            opacity: 0.35;
-            pointer-events: none;
-        }
-        .hero p {
-            font-size: 1.15rem;
-            font-weight: 300;
-            color: var(--color-text-secondary);
-            max-width: 650px;
-            margin: 1.5rem auto 3.5rem auto;
-            line-height: 1.6;
-        }
-        .cta-group { display: flex; gap: 1rem; }
-        
-        .btn {
-            padding: 0.9rem 2.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            transition: all 0.3s var(--ease-spring);
-        }
-        .btn-primary {
-            background: #fff;
-            color: #000;
-        }
-        .btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
-        .btn-secondary {
-            border: 1px solid var(--color-border);
-            background: var(--color-surface);
-            color: #fff;
-        }
-        .btn-secondary:hover { background: var(--color-surface-hover); transform: translateY(-2px); }
-
-        /* Marquee */
-        .marquee-wrapper {
-            border-top: 1px solid var(--color-border);
-            border-bottom: 1px solid var(--color-border);
-            padding: 1rem 0;
-            overflow: hidden;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-        .marquee {
-            display: flex;
-            white-space: nowrap;
-            animation: marquee 25s linear infinite;
-        }
-        .marquee span {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--color-text-secondary);
-            margin: 0 2rem;
-        }
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-        /* General Section Layout */
-        section { padding: 8rem 0; position: relative; z-index: 1; }
-
-        /* Research Split */
-        .split-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-        }
-        .split-panel { padding: 2rem; border-radius: 1rem; }
-        .panel-yudi { border: 1px solid rgba(255,255,255,0.2); background: radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent); }
-        .panel-traditional { opacity: 0.5; border: 1px dashed var(--color-border); }
-
-        /* Stats Row */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 2rem;
-            margin: 4rem 0;
-        }
-        .stat-card {
-            text-align: center;
-            padding: 3rem 1rem;
-            background: #000;
-        }
-        .stat-number {
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 800;
-            letter-spacing: -0.03em;
-        }
-        .stat-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--color-text-secondary);
-        }
-
-        /* LCoMs Grid */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.5rem;
-        }
-        .feature-card { padding: 2rem; }
-        .feature-card h3 { font-size: 1rem; margin: 1rem 0; font-weight: 600; }
-        .feature-card p { font-size: 0.95rem; color: var(--color-text-secondary); }
-
-        /* Architecture Section */
-        .arch-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-        #graph-wrapper {
-            width: 100%; height: 400px;
-            position: relative;
-        }
-        canvas#graph-canvas {
-            width: 100%; height: 100%;
-            display: block;
-        }
-        .arch-bullets li {
-            list-style: none;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border-left: 2px solid var(--color-border);
-            transition: border-color 0.3s;
-        }
-        .arch-bullets li:hover { border-color: #fff; }
-        .arch-bullets h4 { font-size: 1rem; margin-bottom: 0.5rem; }
-
-        /* Contact Form */
-        .contact-form {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .form-group { margin-bottom: 1.5rem; }
-        input, textarea {
-            width: 100%;
-            padding: 1rem;
-            background: transparent;
-            border: 1px solid var(--color-border);
-            color: #fff;
-            border-radius: 8px;
-            font-family: inherit;
-            transition: border-color 0.3s;
-        }
-        input:focus, textarea:focus { outline: none; border-color: rgba(255,255,255,0.5); }
-        textarea { resize: vertical; min-height: 120px; }
-        button[type="submit"] {
-            width: 100%;
-            cursor: pointer;
-            border: none;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 4rem 5%;
-            border-top: 1px solid var(--color-border);
-            color: var(--color-text-dim);
-            font-size: 0.85rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .split-grid, .arch-grid { grid-template-columns: 1fr; gap: 2rem; }
-            section { padding: 5rem 0; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YUDI — AI Research Lab</title>
+  <meta name="description" content="YUDI is an AI research lab developing LCoMs — Large Conversational Models. Brain-native architecture. Emotionally intelligent. Tokenless. 80× cheaper.">
+  
+  <meta property="og:title" content="YUDI — AI Research Lab">
+  <meta property="og:description" content="Building the next class of AI models. Brain-native. Tokenless. Emotionally intelligent.">
+  <meta property="og:image" content="https://yudi.ai/og-image.png">
+  <meta property="og:type" content="website">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <div id="loader">
-        <div class="loader-content">
-            <div class="loader-logo">YUDI</div>
-            <div class="loader-bar-bg">
-                <div class="loader-bar-fill"></div>
-            </div>
-        </div>
+  <div id="dot"></div>
+  <div id="ring"></div>
+
+  <div id="loader">
+    <div class="ld-inner">
+      <div class="ld-logo-wrap">
+        <div class="ld-logo">YUDI</div>
+        <div class="ld-shimmer"></div>
+      </div>
+      <div class="ld-progress-container">
+        <div class="ld-progress-bar"></div>
+      </div>
+      <div class="ld-text-wrap">
+        <p class="ld-label">Initializing Brain-Native Architecture</p>
+        <span class="ld-pct" id="ldPct">0%</span>
+      </div>
     </div>
+  </div>
 
-    <canvas id="neural-canvas"></canvas>
-
-    <nav id="navbar">
-        <a href="#" class="logo">
-            <img src="logo.png" alt="YUDI Logo" onerror="this.outerHTML='<span style=\'font-weight:700; letter-spacing:1px; text-transform:uppercase;\'>YUDI.</span>'">
-        </a>
-        <div class="nav-links">
-            <a href="#research">Research</a>
-            <a href="#lcoms">LCoMs</a>
-            <a href="#architecture">Architecture</a>
-        </div>
-    </nav>
-
-    <section class="hero reveal delay-1">
-        <div class="container">
-            <h1 class="display-title">YUDI</h1>
-            <h2 class="subtitle">AI Research Lab</h2>
-            <p>Building a new class of Artificial Intelligence. Brain-native architecture grounded in neuroscience and emotional intelligence.</p>
-            <div class="cta-group" style="justify-content: center;">
-                <a href="#research" class="btn btn-secondary">Our Research</a>
-                <a href="#contact" class="btn btn-primary">Get in Touch</a>
-            </div>
-        </div>
-    </section>
-
-    <div class="marquee-wrapper reveal delay-2">
-        <div class="marquee">
-            <span>Tokenless Architecture</span> <span>♦</span> <span>Emotional Intelligence</span> <span>♦</span> <span>Persistent States</span> <span>♦</span> <span>Brain-Native Core</span> <span>♦</span> <span>LCoMs Paradigm</span> <span>♦</span>
-            <span>Tokenless Architecture</span> <span>♦</span> <span>Emotional Intelligence</span> <span>♦</span> <span>Persistent States</span> <span>♦</span> <span>Brain-Native Core</span> <span>♦</span> <span>LCoMs Paradigm</span> <span>♦</span>
-        </div>
+  <nav id="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">
+        <img src="logo.png" alt="YUDI Logo" class="brand-logo">
+      </a>
+      <div class="nav-links desktop-only">
+        <a href="#lcoms">Research</a>
+        <a href="#lcoms">Models</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#researchers">Join Us</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <a href="#contact" class="nav-cta">Contact Us</a>
     </div>
+  </nav>
 
-    <section id="research" class="container">
-        <h2 class="section-title reveal">The Paradigm Shift</h2>
-        <div class="split-grid">
-            <div class="split-panel panel-yudi glass reveal delay-1">
-                <div style="font-size:0.8rem; text-transform:uppercase; color:var(--color-text-secondary); margin-bottom:1rem;">Our Approach</div>
-                <h3>Brain-Native LCoMs</h3>
-                <p class="text-muted" style="margin-top:1rem;">Information is processed experientially, mapping conceptual nodes directly to emotional weights and relational edges.</p>
-            </div>
-            <div class="split-panel panel-traditional reveal delay-2">
-                <div style="font-size:0.8rem; text-transform:uppercase; color:var(--color-text-secondary); margin-bottom:1rem;">Legacy System</div>
-                <h3>Traditional LLMs</h3>
-                <p class="text-muted" style="margin-top:1rem;">Information is processed statistically, predicting next tokens via massive matrix multiplications with zero persistent context.</p>
-            </div>
+  <main>
+    <section id="hero">
+      <div class="hero-container">
+        <div class="hero-content reveal">
+          <div class="eyebrow-pill">
+            <span class="dot"></span> AI Research Lab · Stealth Mode
+          </div>
+          <h1>Building the next<br>class of <span class="highlight">AI models.</span></h1>
+          <p class="sub-copy delay-1">YUDI is an AI research lab developing LCoMs — Large Conversational Models. Brain-native architecture. Emotionally intelligent. 80× more economical.</p>
+          <div class="hero-actions delay-2">
+            <a href="#lcoms" class="btn-primary">Explore LCoMs →</a>
+            <a href="#contact" class="btn-secondary">Get in Touch</a>
+          </div>
         </div>
+        <div class="hero-visual reveal delay-3">
+          <div class="blob"></div>
+          <canvas id="heroCanvas"></canvas>
+        </div>
+      </div>
+      <div class="scroll-indicator">
+        <div class="line"></div>
+        <span>Scroll</span>
+      </div>
     </section>
 
-    <section class="container border-top">
-        <div class="stats-grid">
-            <div class="stat-card glass reveal delay-1">
-                <div class="stat-number">80×</div>
-                <div class="stat-label">Cheaper to Run</div>
-            </div>
-            <div class="stat-card glass reveal delay-2">
-                <div class="stat-number">10yr</div>
-                <div class="stat-label">Persistent Memory</div>
-            </div>
-            <div class="stat-card glass reveal delay-3">
-                <div class="stat-number">0</div>
-                <div class="stat-label">Tokens Required</div>
-            </div>
+    <section id="marquee">
+      <div class="marquee-track">
+        <div class="marquee-content">
+          Brain-Native AI <span class="sep">◆</span> Large Conversational Models <span class="sep">◆</span> Emotional Intelligence <span class="sep">◆</span> Neuroscience × Computation <span class="sep">◆</span> Tokenless Architecture <span class="sep">◆</span> 10-Year Persistent Memory <span class="sep">◆</span> 80× Cost Reduction <span class="sep">◆</span> Sparse Coding <span class="sep">◆</span> Anti-Transformer Research <span class="sep">◆</span> LCoMs <span class="sep">◆</span>
         </div>
+        <div class="marquee-content" aria-hidden="true">
+          Brain-Native AI <span class="sep">◆</span> Large Conversational Models <span class="sep">◆</span> Emotional Intelligence <span class="sep">◆</span> Neuroscience × Computation <span class="sep">◆</span> Tokenless Architecture <span class="sep">◆</span> 10-Year Persistent Memory <span class="sep">◆</span> 80× Cost Reduction <span class="sep">◆</span> Sparse Coding <span class="sep">◆</span> Anti-Transformer Research <span class="sep">◆</span> LCoMs <span class="sep">◆</span>
+        </div>
+      </div>
     </section>
 
-    <section id="lcoms" class="container">
-        <div style="max-width: 600px; margin-bottom: 4rem;" class="reveal">
-            <h2 class="section-title" style="margin-bottom: 1rem;">Large Conversational Models</h2>
-            <p class="text-muted">Moving beyond text prediction. LCoMs are designed to interact, remember, and empathize organically.</p>
+    <section id="positioning" class="reveal">
+      <div class="split-panel active">
+        <div class="label left-label">YUDI Research</div>
+        <h2>Brain-native architecture.</h2>
+        <p>Grounded in computational neuroscience. Emotionally intelligent models built on understanding, not statistical probability.</p>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="icon-box active-box">🧠</div>
+            <div>
+              <h3>Computational Neuroscience</h3>
+              <p>Grounded in how real brains process information. Not statistical prediction.</p>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="icon-box active-box">⚛️</div>
+            <div>
+              <h3>Neuroscience × Machine Learning</h3>
+              <p>Bridging biological intelligence with modern computational frameworks.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel-divider"></div>
+
+      <div class="split-panel muted">
+        <div class="label right-label">Traditional LLM</div>
+        <h2>Prediction-based architecture.</h2>
+        <p>Token prediction, stateless interactions, limited context windows, and prohibitively expensive scaling laws.</p>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="icon-box muted-box">📊</div>
+            <div>
+              <h3>Next-token prediction</h3>
+              <p>Statistically likely word sequences. Not real understanding.</p>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="icon-box muted-box">🗑️</div>
+            <div>
+              <h3>Context window memory</h3>
+              <p>Forgets everything beyond the context limit. No continuity.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stats" class="reveal">
+      <div class="stat-cell">
+        <div class="stat-num" id="stat1">0×</div>
+        <div class="stat-label">Cheaper than existing models</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num" id="stat2">0yr</div>
+        <div class="stat-label">Persistent conversational memory</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num" id="stat3">0</div>
+        <div class="stat-label">Tokens — completely tokenless</div>
+      </div>
+    </section>
+
+    <section id="lcoms" class="reveal">
+      <div class="lcoms-container">
+        <div class="section-header">
+          <span class="section-label">What We're Building</span>
+          <h2>Large Conversational Models <span class="highlight">— LCoMs</span></h2>
+          <p>A new class of AI models. Not built on prediction. Built on understanding.</p>
+        </div>
+        <div class="card-grid">
+          <div class="feature-card reveal delay-1">
+            <div class="card-icon">❤️</div>
+            <h3>Emotional Intelligence</h3>
+            <p>LCoMs understand emotional state as a first-class input — not just words, but the feeling behind them. Emotion drives response, not just text probability.</p>
+          </div>
+          <div class="feature-card reveal delay-2">
+            <div class="card-icon">🕰️</div>
+            <h3>Persistent Memory States</h3>
+            <p>Up to 10 years of conversational memory — recalled with emotional context and temporal relevance. The way human memory actually works.</p>
+          </div>
+          <div class="feature-card reveal delay-3">
+            <div class="card-icon">🚫</div>
+            <h3>Tokenless Architecture</h3>
+            <p>We abandon the token paradigm entirely. Meaning is processed natively — 80× more economical than transformer-based alternatives.</p>
+          </div>
+          <div class="feature-card reveal delay-4">
+            <div class="card-icon">🧬</div>
+            <h3>Brain-Native Core</h3>
+            <p>Inspired by biological neural systems. Concepts as graphs of meaning, not sequences of tokens. Neuroscience meets systems engineering.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture" class="reveal">
+      <div class="arch-canvas-wrap">
+        <canvas id="graphCanvas"></canvas>
+      </div>
+      <div class="arch-content">
+        <span class="section-label arch-label">Architecture</span>
+        <h2>Concept graph.<br>Not token stream.</h2>
+        <p class="sub-copy">Meaning exists as relationships, not positions. YUDI models encode knowledge as dynamic concept graphs — the same way the brain does.</p>
+        
+        <div class="arch-points">
+          <div class="point reveal delay-1">
+            <span class="badge">01</span>
+            <div>
+              <h3>Concept Nodes</h3>
+              <p>Each node is a unit of meaning — emotional, semantic, episodic. Not a token. A grounded, contextual concept.</p>
+            </div>
+          </div>
+          <div class="point reveal delay-2">
+            <span class="badge">02</span>
+            <div>
+              <h3>Relational Edges</h3>
+              <p>Edges encode cause, time, emotion, similarity. The model reasons over relationship structures naturally.</p>
+            </div>
+          </div>
+          <div class="point reveal delay-3">
+            <span class="badge">03</span>
+            <div>
+              <h3>Emotional Weighting</h3>
+              <p>Every concept carries an emotional valence. The model understands not just what you said, but how you felt saying it.</p>
+            </div>
+          </div>
+          <div class="point reveal delay-4">
+            <span class="badge">04</span>
+            <div>
+              <h3>10-Year Persistent Memory</h3>
+              <p>Graph state persists, evolves, and is queryable across years of interaction — without retraining or fine-tuning.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="researchers" class="reveal">
+      <div class="join-container">
+        <span class="section-label join-label">We're Looking For You</span>
+        <h2>Are you building against the transformer paradigm?</h2>
+        
+        <div class="quote-card">
+          <span class="quote-mark">"</span>
+          <p>If you are a neuroscientist, work in AI research that goes against transformers in retention, work in sparse coding, nascent neurobiology, or computational neuroscience — please feel free to DM us.</p>
         </div>
         
-        <div class="cards-grid">
-            <div class="feature-card glass glass-hover reveal delay-1">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                <h3>Emotional Intelligence</h3>
-                <p>Natively maps sentiment and emotional weight to semantic concepts, enabling genuine empathetic processing.</p>
-            </div>
-            <div class="feature-card glass glass-hover reveal delay-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <h3>Persistent States</h3>
-                <p>Continuous learning state retains conversational context for up to a decade without context-window drop-offs.</p>
-            </div>
-            <div class="feature-card glass glass-hover reveal delay-3">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg>
-                <h3>Tokenless Design</h3>
-                <p>Eliminates the arbitrary token bottleneck. Processes semantic chunks holistically, drastically reducing latency.</p>
-            </div>
-            <div class="feature-card glass glass-hover reveal delay-1">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                <h3>Hyper-Efficient</h3>
-                <p>Optimized architecture yields an 80x reduction in compute costs compared to legacy frontier LLMs.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="architecture" class="container">
-        <h2 class="section-title reveal">Architecture Graph</h2>
-        <div class="arch-grid">
-            <div id="graph-wrapper" class="glass reveal delay-1">
-                <canvas id="graph-canvas"></canvas>
-            </div>
-            <ul class="arch-bullets reveal delay-2">
-                <li>
-                    <h4>Concept Nodes</h4>
-                    <p class="text-muted text-sm">Ideas are stored as localized data points rather than distributed weights.</p>
-                </li>
-                <li>
-                    <h4>Relational Edges</h4>
-                    <p class="text-muted text-sm">Dynamic connections form based on conversational proximity and logic.</p>
-                </li>
-                <li>
-                    <h4>Emotional Weighting</h4>
-                    <p class="text-muted text-sm">Node activation is modulated by detected human emotional states.</p>
-                </li>
-                <li>
-                    <h4>Memory Consolidation</h4>
-                    <p class="text-muted text-sm">Short-term context solidifies into long-term architectural pathways.</p>
-                </li>
-            </ul>
-        </div>
-    </section>
-
-    <section id="contact" class="container reveal">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h2 class="section-title">Initiate Contact</h2>
-            <p class="text-muted">For investor inquiries, competition panels, and research collaboration.</p>
-        </div>
+        <p class="join-sub">YUDI is assembling a small, high-conviction team of researchers who believe the next breakthrough in AI won't come from scaling transformers — it will come from understanding the brain.</p>
         
-        <form class="contact-form glass" style="padding: 3rem;" action="https://formspree.io/f/mqewlawk" method="POST">
-            <div class="form-group">
-                <input type="text" name="name" placeholder="Name" required>
-            </div>
-            <div class="form-group">
-                <input type="email" name="email" placeholder="Work Email" required>
-            </div>
-            <div class="form-group">
-                <input type="text" name="organization" placeholder="Organization / Role">
-            </div>
-            <div class="form-group">
-                <textarea name="message" placeholder="Message" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Send Transmission</button>
+        <div class="tag-pills">
+          <span>Computational Neuroscience</span>
+          <span>Sparse Coding</span>
+          <span>Neuromorphic Computing</span>
+          <span>Synaptic Plasticity</span>
+          <span>Graph Neural Networks</span>
+          <span>Cognitive Architecture</span>
+          <span>Anti-Transformer Research</span>
+          <span>Memory & Retention</span>
+          <span>Hebbian Learning</span>
+        </div>
+
+        <a href="#contact" class="btn-primary">DM / Reach Out →</a>
+        <p class="micro-text">We respond to everyone.</p>
+      </div>
+    </section>
+
+    <section id="contact" class="reveal">
+      <div class="contact-wrap">
+        <span class="section-label">Contact</span>
+        <h2>Let's talk.</h2>
+        <p>We're in stealth. If you're a researcher, investor, or collaborator — we'd love to hear from you.</p>
+        
+        <form id="contactForm" action="https://formspree.io/f/mqewlawk" method="POST">
+          <div class="form-row">
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="email" name="email" placeholder="Email" required>
+          </div>
+          <input type="text" name="role" placeholder="Organization / Role" required>
+          <textarea name="message" rows="5" placeholder="Message" required></textarea>
+          <button type="submit" class="btn-submit">Submit Message</button>
         </form>
+      </div>
     </section>
+  </main>
 
-    <footer>
-        <div class="container">
-            <img src="logo.png" alt="YUDI" onerror="this.style.display='none'" style="height: 20px; margin: 0 auto 1rem; opacity: 0.5;">
-            <p>&copy; 2026 YUDI AI Research Lab. All rights reserved.</p>
-        </div>
-    </footer>
+  <footer>
+    <div class="footer-col">
+      <img src="logo.png" alt="YUDI Logo" class="footer-logo">
+    </div>
+    <div class="footer-col footer-links">
+      <a href="#lcoms">Research</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#researchers">Join Us</a>
+    </div>
+    <div class="footer-col copyright">
+      © 2026 YUDI AI Research Lab. All rights reserved.
+    </div>
+  </footer>
 
-    <script>
-        // 1. Pre-loader Logic
-        window.addEventListener('load', () => {
-            // Wait an additional 2 seconds to let the animation play out
-            setTimeout(() => {
-                const loader = document.getElementById('loader');
-                loader.style.opacity = '0';
-                loader.style.visibility = 'hidden';
-                document.body.classList.add('loaded'); // Restore scrolling
-            }, 1900);
-        });
-
-        // 2. Navbar Scroll Effect
-        const nav = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 60) nav.classList.add('scrolled');
-            else nav.classList.remove('scrolled');
-        });
-
-        // 3. Scroll Reveal (IntersectionObserver)
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target); // Run once
-                }
-            });
-        }, { threshold: 0.12 });
-
-        // Wait slightly for the pre-loader before observing hero elements
-        setTimeout(() => {
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-        }, 1500);
-
-        // 4. Background Neural Network Canvas
-        const bgCanvas = document.getElementById('neural-canvas');
-        const bgCtx = bgCanvas.getContext('2d');
-        let bgNodes = [];
-        const isMobile = window.innerWidth <= 768;
-        const NODE_COUNT = isMobile ? 50 : 90;
-
-        function initBgCanvas() {
-            bgCanvas.width = window.innerWidth;
-            bgCanvas.height = window.innerHeight;
-            bgNodes = [];
-            for(let i = 0; i < NODE_COUNT; i++) {
-                bgNodes.push({
-                    x: Math.random() * bgCanvas.width,
-                    y: Math.random() * bgCanvas.height,
-                    vx: (Math.random() - 0.5) * 0.6,
-                    vy: (Math.random() - 0.5) * 0.6,
-                    r: Math.random() * 2 + 1
-                });
-            }
-        }
-
-        function drawBgCanvas() {
-            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-            bgCtx.fillStyle = 'rgba(255,255,255,0.6)';
-
-            for(let i = 0; i < bgNodes.length; i++) {
-                let n1 = bgNodes[i];
-                // Move
-                n1.x += n1.vx; n1.y += n1.vy;
-                // Bounce
-                if(n1.x < 0 || n1.x > bgCanvas.width) n1.vx *= -1;
-                if(n1.y < 0 || n1.y > bgCanvas.height) n1.vy *= -1;
-
-                // Draw node
-                bgCtx.beginPath();
-                bgCtx.arc(n1.x, n1.y, n1.r, 0, Math.PI * 2);
-                bgCtx.fill();
-
-                // Draw edges
-                for(let j = i + 1; j < bgNodes.length; j++) {
-                    let n2 = bgNodes[j];
-                    let dx = n1.x - n2.x;
-                    let dy = n1.y - n2.y;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
-
-                    if(dist < 140) {
-                        bgCtx.beginPath();
-                        bgCtx.strokeStyle = `rgba(255,255,255,${0.18 * (1 - dist/140)})`;
-                        bgCtx.lineWidth = 0.5;
-                        bgCtx.moveTo(n1.x, n1.y);
-                        bgCtx.lineTo(n2.x, n2.y);
-                        bgCtx.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(drawBgCanvas);
-        }
-
-        window.addEventListener('resize', initBgCanvas);
-        initBgCanvas();
-        drawBgCanvas();
-
-        // 5. Concept Graph Canvas (Architecture Section)
-        const graphCanvas = document.getElementById('graph-canvas');
-        const gCtx = graphCanvas.getContext('2d');
-        let gNodes = [];
-        let time = 0;
-
-        function initGraph() {
-            const wrapper = document.getElementById('graph-wrapper');
-            graphCanvas.width = wrapper.offsetWidth;
-            graphCanvas.height = wrapper.offsetHeight;
-            
-            const cx = graphCanvas.width / 2;
-            const cy = graphCanvas.height / 2;
-
-            gNodes = [];
-            // Core Node
-            gNodes.push({ bx: cx, by: cy, r: 10, isCore: true });
-
-            // Satellite Nodes
-            const count = 9;
-            for(let i = 0; i < count; i++) {
-                let angle = (i / count) * Math.PI * 2;
-                let rad = 100 + Math.random() * 60;
-                gNodes.push({
-                    bx: cx + Math.cos(angle) * rad,
-                    by: cy + Math.sin(angle) * rad,
-                    r: 6,
-                    offsetAngle: Math.random() * Math.PI * 2,
-                    isCore: false
-                });
-            }
-        }
-
-        function drawGraph() {
-            gCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
-            time += 0.02;
-
-            // Update positions
-            gNodes.forEach(n => {
-                if(!n.isCore) {
-                    n.x = n.bx + Math.cos(time + n.offsetAngle) * 18;
-                    n.y = n.by + Math.sin(time + n.offsetAngle) * 18;
-                } else {
-                    n.x = n.bx; n.y = n.by;
-                }
-            });
-
-            // Draw Edges from Core to all, and some cross-edges
-            const core = gNodes[0];
-            gCtx.lineWidth = 1;
-            
-            for(let i = 1; i < gNodes.length; i++) {
-                let n = gNodes[i];
-                // Line to core
-                gCtx.beginPath();
-                gCtx.strokeStyle = 'rgba(255,255,255,0.2)';
-                gCtx.moveTo(core.x, core.y);
-                gCtx.lineTo(n.x, n.y);
-                gCtx.stroke();
-
-                // Connect to neighbor
-                if(i < gNodes.length - 1) {
-                    gCtx.beginPath();
-                    gCtx.strokeStyle = 'rgba(255,255,255,0.08)';
-                    gCtx.moveTo(n.x, n.y);
-                    gCtx.lineTo(gNodes[i+1].x, gNodes[i+1].y);
-                    gCtx.stroke();
-                }
-            }
-
-            // Draw Nodes
-            gNodes.forEach((n, idx) => {
-                let pulse = Math.abs(Math.sin(time + (n.offsetAngle||0))) * 0.4 + 0.6;
-                gCtx.beginPath();
-                gCtx.fillStyle = `rgba(255,255,255,${pulse})`;
-                gCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-                gCtx.fill();
-
-                if(!n.isCore) {
-                    gCtx.fillStyle = 'rgba(255,255,255,0.3)';
-                    gCtx.font = '10px Inter, sans-serif';
-                    gCtx.fillText(`Node_0${idx}`, n.x + 10, n.y + 10);
-                }
-            });
-
-            requestAnimationFrame(drawGraph);
-        }
-
-        // Initialize graph once it's visible or safely sized
-        setTimeout(() => {
-            initGraph();
-            drawGraph();
-        }, 1000); // Trigger slightly after load
-        window.addEventListener('resize', initGraph);
-
-    </script>
+  <script src="script.js"></script>
 </body>
 </html>
