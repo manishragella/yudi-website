@@ -5,7 +5,7 @@
   --black: #000000;
   --lb: #c5ddff;
   --blue-dark: #2d7ec4;
-  --bg: #ffffff; /* Changed base to white to prevent color clashes */
+  --bg: #ffffff;
   --white: #ffffff;
   --surface: #f8fafc;
   --text: #0a0a0a;
@@ -89,7 +89,7 @@ h1, h2, h3 { font-family: var(--sg); font-weight: 700; color: var(--black); }
 .btn-secondary { background: transparent; color: var(--black); border: 2px solid var(--black); }
 .btn-secondary:hover { background: var(--black); color: var(--white); transform: translateY(-2px); }
 
-/* ================= NAVBAR & LOGO FIX ================= */
+/* ================= NAVBAR ================= */
 #navbar {
   position: fixed; top: 0; width: 100%; z-index: 100;
   padding: 1.2rem 5%; background: transparent;
@@ -101,11 +101,10 @@ h1, h2, h3 { font-family: var(--sg); font-weight: 700; color: var(--black); }
 }
 .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: var(--max-width); margin: 0 auto; }
 
-/* LOGO FIX: Unrestricted width, soft corners, no circle clipping */
 .brand-logo {
   height: 38px;
-  width: auto; /* Lets the logo be rectangular naturally */
-  border-radius: 12px; /* Softly rounds corners instead of cutting a circle */
+  width: auto; 
+  border-radius: 12px; 
   object-fit: contain;
 }
 
@@ -114,12 +113,13 @@ h1, h2, h3 { font-family: var(--sg); font-weight: 700; color: var(--black); }
 .nav-cta { background: var(--black); color: var(--white); font-size: 0.85rem; font-weight: 500; padding: 0.5rem 1.2rem; border-radius: 6px; transition: background 0.2s; }
 .nav-cta:hover { background: var(--blue); }
 
-/* ================= HERO (FULL WIDTH FIX) ================= */
+/* ================= HERO (OVERLAP FIX) ================= */
 #hero {
-  width: 100%; /* Spans full screen */
+  width: 100%; 
   background: var(--white);
   min-height: 100vh;
-  padding: 140px 5% 0;
+  /* 100px bottom padding protects the scroll indicator */
+  padding: 140px 5% 100px; 
   display: flex; 
   justify-content: center;
   position: relative;
@@ -127,8 +127,10 @@ h1, h2, h3 { font-family: var(--sg); font-weight: 700; color: var(--black); }
 .hero-container {
   display: flex;
   width: 100%;
-  max-width: var(--max-width); /* Keeps text centered */
+  max-width: var(--max-width); 
   align-items: center;
+  /* Pushes content away from the absolute bottom */
+  padding-bottom: 50px; 
 }
 .hero-content { flex: 0 0 50%; padding-right: 4%; z-index: 2; }
 .hero-visual { flex: 0 0 50%; height: 600px; position: relative; }
@@ -151,6 +153,7 @@ h1, h2, h3 { font-family: var(--sg); font-weight: 700; color: var(--black); }
 
 .scroll-indicator {
   position: absolute; bottom: 40px; left: 5%; display: flex; align-items: center; gap: 12px;
+  z-index: 10; /* Ensures it stays above overlapping content if window is dragged extremely small */
 }
 .scroll-indicator .line { width: 1px; height: 40px; background: var(--border); overflow: hidden; position: relative; }
 .scroll-indicator .line::after {
@@ -199,7 +202,7 @@ h1, h2, h3 { font-family: var(--sg); font-weight: 700; color: var(--black); }
 .stat-num { font-family: var(--sg); font-weight: 700; font-size: clamp(3.5rem, 6vw, 5.5rem); color: var(--white); letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.5rem; }
 .stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.72); text-transform: uppercase; letter-spacing: 0.1em; }
 
-/* ================= LCoMs (FULL WIDTH FIX) ================= */
+/* ================= LCoMs ================= */
 #lcoms { 
   padding: 8% 5%; background: var(--white); width: 100%; 
   display: flex; justify-content: center;
@@ -245,7 +248,7 @@ h1, h2, h3 { font-family: var(--sg); font-weight: 700; color: var(--black); }
 .point h3 { font-size: 1rem; margin-bottom: 0.4rem; }
 .point p { font-size: 0.85rem; line-height: 1.65; color: var(--muted); }
 
-/* ================= RESEARCHERS (JOIN US) ================= */
+/* ================= RESEARCHERS ================= */
 #researchers { background: #000; padding: 9% 5%; text-align: center; color: var(--white); width: 100%; }
 .join-container { max-width: 800px; margin: 0 auto; }
 #researchers h2 { color: var(--white); font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 3rem; }
@@ -279,6 +282,7 @@ input, textarea {
 }
 input::placeholder, textarea::placeholder { color: rgba(100,116,139,0.55); }
 input:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(76,159,227,0.12); }
+
 .btn-submit { background: var(--black); color: var(--white); width: 100%; border: none; }
 .btn-submit:hover { background: var(--blue); }
 
